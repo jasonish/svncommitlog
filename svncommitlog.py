@@ -33,9 +33,11 @@ except:
 
 SENDMAIL_PATH = "/usr/sbin/sendmail"
 
-def sendmail(sendto, subject, buf):
+def sendmail(sendto, subject, buf, from_addr):
     """ Send the commit email. """
     sm = os.popen("%s %s" % (SENDMAIL_PATH, sendto), "w")
+    if from_addr:
+        sm.write("From: %s\n" % from_addr)
     sm.write("To: %s\n" % sendto)
     sm.write("Subject: SVN Commit: %s\n" % subject)
     sm.write("\n")
@@ -62,7 +64,7 @@ def lookup_author(author_file, author):
         try:
             username, email = line.split("\t")
             if username == author:
-                return email
+                return email.strip()
         except:
             continue
 
@@ -106,9 +108,9 @@ def main(argv=None):
 
     if authors:
         try:
-            author = lookup_author(authors, author)
+            author_full = lookup_author(authors, author)
         except:
-            raise
+            author_full = None
 
     # Get the list of files that have been modified, added and
     # deleted.
@@ -176,7 +178,7 @@ def main(argv=None):
 
     # Send the email.
     if mailto:
-        sendmail(mailto, ", ".join(modules), output.getvalue())
+        sendmail(mailto, ", ".join(modules), output.getvalue(), author_full)
 
     # Update the changelog.
     if changelog:
