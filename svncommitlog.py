@@ -10,6 +10,8 @@
 #
 #    --mailto      Email address to mail commit message to.
 #    --changelog   Filename to append commit message to.
+#    --authors     A file that contains a map of usernames to full names
+#                  and email addresses.  See authors.txt for an example.
 #
 # * One of --mailto or --changelog must be specified.
 #
@@ -49,14 +51,33 @@ def update_changelog(changelog, buf):
     changeoutput.write("\n")
     changeoutput.close()
 
+def lookup_author(author_file, author):
+    authors = open(author_file)
+    while 1:
+        line = authors.readline()
+        if not line:
+            break
+        if line.startswith("#"):
+            continue
+        try:
+            username, email = line.split("\t")
+            if username == author:
+                return email
+        except:
+            continue
+
+    # Default, return the author as passed in.
+    return author
+
 def main(argv=None):
     if not argv:
         argv = sys.argv
 
     changelog = None
     mailto = None
+    authors = None
     try:
-        opts, args = getopt.getopt(argv[1:], "", ["mailto=", "changelog="])
+        opts, args = getopt.getopt(argv[1:], "", ["mailto=", "changelog=", "authors="])
     except getopt.GetoptError:
         sys.exit(1)
     for o, a in opts:
@@ -64,6 +85,8 @@ def main(argv=None):
             mailto = a
         if o == "--changelog":
             changelog = a
+        if o == "--authors":
+            authors = a
 
     repo = args[0]
     rev = int(args[1])
@@ -80,6 +103,12 @@ def main(argv=None):
      date,
      loglen,
      log) = info.split("\n")
+
+    if authors:
+        try:
+            author = lookup_author(authors, author)
+        except:
+            raise
 
     # Get the list of files that have been modified, added and
     # deleted.

@@ -1,0 +1,6 @@
+# This file maps usernames to full names and email addresses.  The
+# format is:
+#    username\tFirstName LastName <email@address.com>
+#
+
+jason	Jason Ish <ish@unx.ca>
