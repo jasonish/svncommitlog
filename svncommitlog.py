@@ -26,6 +26,7 @@ import os
 import os.path
 import commands
 import getopt
+import string
 try:
     from cStringIO import StringIO
 except:
@@ -104,13 +105,16 @@ def main(argv=None):
     (author,
      date,
      loglen,
-     log) = info.split("\n")
+     log) = string.split(info, "\n", maxsplit=3)
 
     if authors:
         try:
             author_full = lookup_author(authors, author)
         except:
+            raise
             author_full = None
+    else:
+        author_full = author
 
     # Get the list of files that have been modified, added and
     # deleted.
@@ -143,7 +147,7 @@ def main(argv=None):
 
     output = StringIO()
 
-    output.write("Changes by: %s\n" % author.strip())
+    output.write("Changes by: %s\n" % author_full.strip())
     output.write("Date:       %s\n" % date.strip())
     output.write("Revision:   %d\n" % rev)
     output.write("\n")
